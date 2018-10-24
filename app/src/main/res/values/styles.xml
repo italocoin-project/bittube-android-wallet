@@ -367,8 +367,4 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <style name="InputError" parent="TextAppearance.AppCompat.Small">
-        <item name="android:textColor">@color/colorAccent</item>
-    </style>
-
 </resources>
