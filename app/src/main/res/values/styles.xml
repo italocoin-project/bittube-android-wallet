@@ -59,10 +59,6 @@
         <item name="android:textAllCaps">true</item>
     </style>
 
-    <style name="MoneroLabel.Caps.White">
-        <item name="android:textColor">@color/moneroWhite</item>
-    </style>
-
     <style name="MoneroLabel.Caps.Black">
         <item name="android:textColor">@color/moneroBlack</item>
     </style>
@@ -129,19 +125,20 @@
     <!-- textSize is in dp here to match the layout of the numpad-->
     <style name="MoneroLabel.NumPad">
         <item name="android:textSize">36sp</item>
-        <item name="android:textColor">@color/moneroBlack</item>
+        <item name="android:textColor">@color/moneroWhite</item>
         <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
         <item name="android:gravity">center</item>
     </style>
 
     <style name="MoneroLabel.Title">
         <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/moneroWhite</item>
     </style>
 
     <style name="MoneroLabel.Subtitle">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/moneroWhite</item>
+        <item name="android:textColor">@color/moneroGray</item>
     </style>
 
     <style name="MoneroLabel.Heading">
@@ -365,6 +362,18 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:backgroundTint">@color/moneroBlue</item>
         <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="InputError" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="label_bold">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
 </resources>
