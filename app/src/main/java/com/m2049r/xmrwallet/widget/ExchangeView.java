@@ -42,7 +42,9 @@ import com.m2049r.xmrwallet.model.Wallet;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeApi;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeCallback;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeRate;
+import com.m2049r.xmrwallet.service.exchange.kraken.ExchangeApiImpl;
 import com.m2049r.xmrwallet.util.Helper;
+import com.m2049r.xmrwallet.util.OkHttpClientSingleton;
 
 import java.util.Locale;
 
@@ -96,10 +98,10 @@ public class ExchangeView extends LinearLayout
     }
 
     public void setError(String msg) {
-        etAmount.setError(msg);
+        etAmount.getTil().setError(msg);
     }
 
-    TextInputLayout etAmount;
+    InputLayout etAmount;
     TextView tvAmountB;
     Spinner sCurrencyA;
     Spinner sCurrencyB;
@@ -162,14 +164,12 @@ public class ExchangeView extends LinearLayout
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        etAmount = (TextInputLayout) findViewById(R.id.etAmount);
+        etAmount = (InputLayout) findViewById(R.id.etAmount);
         tvAmountB = (TextView) findViewById(R.id.tvAmountB);
         sCurrencyA = (Spinner) findViewById(R.id.sCurrencyA);
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner);
-        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown_item);
-        sCurrencyA.setAdapter(adapter);
+        sCurrencyA.setAdapter(ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner_receive));
         sCurrencyB = (Spinner) findViewById(R.id.sCurrencyB);
-        sCurrencyB.setAdapter(adapter);
+        sCurrencyB.setAdapter(ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner_receive_gray));
         evExchange = (ImageView) findViewById(R.id.evExchange);
         pbExchange = (ProgressBar) findViewById(R.id.pbExchange);
 
@@ -177,6 +177,7 @@ public class ExchangeView extends LinearLayout
         pbExchange.getIndeterminateDrawable().
                 setColorFilter(getResources().getColor(R.color.trafficGray),
                         android.graphics.PorterDuff.Mode.MULTIPLY);
+
 
 
         sCurrencyA.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -238,7 +239,7 @@ public class ExchangeView extends LinearLayout
         etAmount.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
-                etAmount.setError(null);
+                etAmount.getTil().setError(null);
                 //doExchange();
             }
 
@@ -265,21 +266,21 @@ public class ExchangeView extends LinearLayout
                 double a = Double.parseDouble(amountEntry);
                 double maxAmount = (getCurrencyA() == 0) ? MAX_AMOUNT_XMR : MAX_AMOUNT_NOTXMR;
                 if (a > (maxAmount)) {
-                    etAmount.setError(getResources().
+                    etAmount.getTil().setError(getResources().
                             getString(R.string.receive_amount_too_big,
                                     String.format(Locale.US, "%,.0f", maxAmount)));
                     ok = false;
                 } else if (a < 0) {
-                    etAmount.setError(getResources().getString(R.string.receive_amount_negative));
+                    etAmount.getTil().setError(getResources().getString(R.string.receive_amount_negative));
                     ok = false;
                 }
             } catch (NumberFormatException ex) {
-                etAmount.setError(getResources().getString(R.string.receive_amount_nan));
+                etAmount.getTil().setError(getResources().getString(R.string.receive_amount_nan));
                 ok = false;
             }
         }
         if (ok) {
-            etAmount.setError(null);
+            etAmount.getTil().setError(null);
         }
         return ok;
     }
@@ -313,13 +314,12 @@ public class ExchangeView extends LinearLayout
         }
     }
 
-    private final ExchangeApi exchangeApi = Helper.getExchangeApi();
+    private final ExchangeApi exchangeApi = new ExchangeApiImpl(OkHttpClientSingleton.getOkHttpClient());
 
     void startExchange() {
         showProgress();
         String currencyA = (String) sCurrencyA.getSelectedItem();
         String currencyB = (String) sCurrencyB.getSelectedItem();
-
         exchangeApi.queryExchangeRate(currencyA, currencyB,
                 new ExchangeCallback() {
                     @Override
