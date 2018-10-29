@@ -67,7 +67,7 @@ public class ReceiveFragment extends Fragment {
     private TextView tvAddress;
     private TextInputLayout etPaymentId;
     private ExchangeView evAmount;
-    private Button bPaymentId;
+    private View bPaymentId;
     private TextView tvQrCode;
     private ImageView qrCode;
     private ImageView qrCodeFull;
@@ -98,7 +98,7 @@ public class ReceiveFragment extends Fragment {
         tvAddress = (TextView) view.findViewById(R.id.tvAddress);
         etPaymentId = (TextInputLayout) view.findViewById(R.id.etPaymentId);
         evAmount = (ExchangeView) view.findViewById(R.id.evAmount);
-        bPaymentId = (Button) view.findViewById(R.id.bPaymentId);
+        bPaymentId = view.findViewById(R.id.bPaymentId);
         qrCode = (ImageView) view.findViewById(R.id.qrCode);
         tvQrCode = (TextView) view.findViewById(R.id.tvQrCode);
         qrCodeFull = (ImageView) view.findViewById(R.id.qrCodeFull);
