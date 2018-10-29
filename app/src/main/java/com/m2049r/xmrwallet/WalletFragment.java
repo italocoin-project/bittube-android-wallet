@@ -60,7 +60,7 @@ public class WalletFragment extends Fragment
     private TextView tvBalance;
     private TextView tvUnconfirmedAmount;
     private TextView tvProgress;
-    private ImageView ivSynced;
+    private ImageView ivSynced, ivSyncing;
     private ProgressBar pbProgress;
     private Button bReceive;
     private Button bSend;
@@ -97,6 +97,7 @@ public class WalletFragment extends Fragment
         tvUnconfirmedAmount = (TextView) view.findViewById(R.id.tvUnconfirmedAmount);
         tvUnconfirmedAmount.setText(getResources().getString(R.string.xmr_unconfirmed_amount, Helper.getDisplayAmount(0)));
         ivSynced = (ImageView) view.findViewById(R.id.ivSynced);
+        ivSyncing = (ImageView) view.findViewById(R.id.ivSyncing);
 
         sCurrency = (Spinner) view.findViewById(R.id.sCurrency);
         ArrayAdapter currencyAdapter = ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner_balance);
@@ -356,9 +357,11 @@ public class WalletFragment extends Fragment
                 if (x == 0) x = 101; // indeterminate
                 setProgress(x);
                 ivSynced.setVisibility(View.GONE);
+                ivSyncing.setVisibility(View.VISIBLE);
             } else {
                 sync = getString(R.string.status_synced) + " " + formatter.format(wallet.getBlockChainHeight());
                 ivSynced.setVisibility(View.VISIBLE);
+                ivSyncing.setVisibility(View.GONE);
             }
         } else {
             sync = getString(R.string.status_wallet_connecting);
