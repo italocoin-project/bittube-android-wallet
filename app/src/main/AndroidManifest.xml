@@ -46,6 +46,8 @@
 
         <activity android:name=".PreLoginActivity" />
 
+        <activity android:name=".PreLoginActivity" />
+
     </application>
 
 </manifest>
