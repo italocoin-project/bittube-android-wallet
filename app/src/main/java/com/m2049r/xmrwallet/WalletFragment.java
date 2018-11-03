@@ -43,7 +43,9 @@ import com.m2049r.xmrwallet.model.Wallet;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeApi;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeCallback;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeRate;
+import com.m2049r.xmrwallet.service.exchange.coinmarketcap.ExchangeApiImpl;
 import com.m2049r.xmrwallet.util.Helper;
+import com.m2049r.xmrwallet.util.OkHttpClientSingleton;
 import com.m2049r.xmrwallet.widget.Toolbar;
 
 import java.text.NumberFormat;
@@ -100,9 +102,7 @@ public class WalletFragment extends Fragment
         ivSyncing = (ImageView) view.findViewById(R.id.ivSyncing);
 
         sCurrency = (Spinner) view.findViewById(R.id.sCurrency);
-        ArrayAdapter currencyAdapter = ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner_balance);
-        currencyAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown_item);
-        sCurrency.setAdapter(currencyAdapter);
+        sCurrency.setAdapter(ArrayAdapter.createFromResource(getContext(), R.array.currency, R.layout.item_spinner_balance));
 
         bSend = (Button) view.findViewById(R.id.bSend);
         bReceive = (Button) view.findViewById(R.id.bReceive);
@@ -151,7 +151,7 @@ public class WalletFragment extends Fragment
         // at this point selection is XMR in case of error
         String displayB;
         double amountA = Double.parseDouble(Wallet.getDisplayAmount(unlockedBalance)); // crash if this fails!
-        if (!Helper.CRYPTO.equals(balanceCurrency)) { // not XMR
+        if (!"TUBE".equals(balanceCurrency)) { // not XMR
             double amountB = amountA * balanceRate;
             displayB = Helper.getFormattedAmount(amountB, false);
         } else { // XMR
@@ -160,10 +160,10 @@ public class WalletFragment extends Fragment
         tvBalance.setText(displayB);
     }
 
-    String balanceCurrency = Helper.CRYPTO;
+    String balanceCurrency = "TUBE";
     double balanceRate = 1.0;
 
-    private final ExchangeApi exchangeApi = Helper.getExchangeApi();
+    private final ExchangeApi exchangeApi = new ExchangeApiImpl(OkHttpClientSingleton.getOkHttpClient());
 
     void refreshBalance() {
         if (sCurrency.getSelectedItemPosition() == 0) { // XMR
@@ -171,10 +171,9 @@ public class WalletFragment extends Fragment
             tvBalance.setText(Helper.getFormattedAmount(amountXmr, true));
         } else { // not XMR
             String currency = (String) sCurrency.getSelectedItem();
-            Timber.d(currency);
             if (!currency.equals(balanceCurrency) || (balanceRate <= 0)) {
                 showExchanging();
-                exchangeApi.queryExchangeRate(Helper.CRYPTO, currency,
+                exchangeApi.queryExchangeRate("TUBE", currency,
                         new ExchangeCallback() {
                             @Override
                             public void onSuccess(final ExchangeRate exchangeRate) {
@@ -230,10 +229,10 @@ public class WalletFragment extends Fragment
 
     public void exchange(final ExchangeRate exchangeRate) {
         hideExchanging();
-        if (!Helper.CRYPTO.equals(exchangeRate.getBaseCurrency())) {
-            Timber.e("Not XMR");
+        if (!"TUBE".equals(exchangeRate.getBaseCurrency())) {
+            Timber.e("Not TUBE");
             sCurrency.setSelection(0, true);
-            balanceCurrency = Helper.CRYPTO;
+            balanceCurrency = "TUBE";
             balanceRate = 1.0;
         } else {
             int spinnerPosition = ((ArrayAdapter) sCurrency.getAdapter()).getPosition(exchangeRate.getQuoteCurrency());
@@ -258,7 +257,7 @@ public class WalletFragment extends Fragment
     // called from activity
 
     public void onRefreshed(final Wallet wallet, final boolean full) {
-        Timber.d("onRefreshed(%b)", full);
+        Timber.d("onRefreshed()");
         if (full) {
             List<TransactionInfo> list = wallet.getHistory().getAll();
             adapter.setInfos(list);
@@ -272,7 +271,6 @@ public class WalletFragment extends Fragment
             bSend.setVisibility(View.VISIBLE);
             bSend.setEnabled(true);
         }
-        enableAccountsList(true);
     }
 
     boolean walletLoaded = false;
@@ -316,7 +314,7 @@ public class WalletFragment extends Fragment
         if (wallet == null) return;
         walletTitle = wallet.getName();
         String watchOnly = (wallet.isWatchOnly() ? getString(R.string.label_watchonly) : "");
-        walletSubtitle = wallet.getAccountLabel();
+        walletSubtitle = wallet.getAddress().substring(0, 10) + "…" + watchOnly;
         activityCallback.setTitle(walletTitle, walletSubtitle);
         Timber.d("wallet title is %s", walletTitle);
     }
@@ -326,13 +324,10 @@ public class WalletFragment extends Fragment
     private String walletSubtitle = null;
     private long unlockedBalance = 0;
 
-    private int accountIdx = -1;
-
     private void updateStatus(Wallet wallet) {
         if (!isAdded()) return;
         Timber.d("updateStatus()");
-        if ((walletTitle == null) || (accountIdx != wallet.getAccountIndex())) {
-            accountIdx = wallet.getAccountIndex();
+        if (walletTitle == null) {
             setActivityTitle(wallet);
         }
         long balance = wallet.getBalance();
@@ -347,6 +342,7 @@ public class WalletFragment extends Fragment
         Wallet.ConnectionStatus daemonConnected = activityCallback.getConnectionStatus();
         if (daemonConnected == Wallet.ConnectionStatus.ConnectionStatus_Connected) {
             long daemonHeight = activityCallback.getDaemonHeight();
+            Timber.d("TUBE->>>>" + daemonHeight);
             if (!wallet.isSynchronized()) {
                 long n = daemonHeight - wallet.getBlockChainHeight();
                 sync = getString(R.string.status_syncing) + " " + formatter.format(n) + " " + getString(R.string.status_remaining);
@@ -359,7 +355,7 @@ public class WalletFragment extends Fragment
                 ivSynced.setVisibility(View.GONE);
                 ivSyncing.setVisibility(View.VISIBLE);
             } else {
-                sync = getString(R.string.status_synced) + " " + formatter.format(wallet.getBlockChainHeight());
+                sync = getString(R.string.status_synced) + formatter.format(wallet.getBlockChainHeight());
                 ivSynced.setVisibility(View.VISIBLE);
                 ivSyncing.setVisibility(View.GONE);
             }
@@ -420,28 +416,9 @@ public class WalletFragment extends Fragment
         super.onResume();
         Timber.d("onResume()");
         activityCallback.setTitle(walletTitle, walletSubtitle);
-        //activityCallback.setToolbarButton(Toolbar.BUTTON_CLOSE); // TODO: Close button somewhere else
-        activityCallback.setToolbarButton(Toolbar.BUTTON_NONE);
+        activityCallback.setToolbarButton(Toolbar.BUTTON_CLOSE);
         setProgress(syncProgress);
         setProgress(syncText);
         showReceive();
-        if (activityCallback.isSynced()) enableAccountsList(true);
     }
-
-    @Override
-    public void onPause() {
-        enableAccountsList(false);
-        super.onPause();
-    }
-
-    public interface DrawerLocker {
-        void setDrawerEnabled(boolean enabled);
-    }
-
-    private void enableAccountsList(boolean enable) {
-        if (activityCallback instanceof DrawerLocker) {
-            ((DrawerLocker) activityCallback).setDrawerEnabled(enable);
-        }
-    }
-
 }

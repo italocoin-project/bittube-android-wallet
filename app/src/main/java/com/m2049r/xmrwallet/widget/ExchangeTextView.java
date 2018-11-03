@@ -25,7 +25,6 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -37,7 +36,9 @@ import com.m2049r.xmrwallet.model.Wallet;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeApi;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeCallback;
 import com.m2049r.xmrwallet.service.exchange.api.ExchangeRate;
+import com.m2049r.xmrwallet.service.exchange.coinmarketcap.ExchangeApiImpl;
 import com.m2049r.xmrwallet.util.Helper;
+import com.m2049r.xmrwallet.util.OkHttpClientSingleton;
 
 import java.util.Locale;
 
@@ -45,8 +46,6 @@ import timber.log.Timber;
 
 public class ExchangeTextView extends LinearLayout
         implements NumberPadView.NumberPadListener {
-
-    private static String MAX = "\u221E";
 
     String xmrAmount = null;
     String notXmrAmount = null;
@@ -59,7 +58,9 @@ public class ExchangeTextView extends LinearLayout
     }
 
     public boolean validate(double max) {
+
         Timber.d("inProgress=%b", isExchangeInProgress());
+
         if (isExchangeInProgress()) {
             shakeExchangeField();
             return false;
@@ -71,15 +72,17 @@ public class ExchangeTextView extends LinearLayout
                 if (amount > max) {
                     ok = false;
                 }
-                if (amount <= 0) { /////////////////////////////
+                if (amount <= 0) {
                     ok = false;
                 }
             } catch (NumberFormatException ex) {
+                Timber.d("NumberFormatException=%b", ex);
                 // this cannot be
                 Timber.e(ex.getLocalizedMessage());
                 ok = false;
             }
         } else {
+            Timber.d("eslexmrAmount");
             ok = false;
         }
         if (!ok) {
@@ -251,7 +254,7 @@ public class ExchangeTextView extends LinearLayout
         }
     }
 
-    private final ExchangeApi exchangeApi = Helper.getExchangeApi();
+    private final ExchangeApi exchangeApi = new ExchangeApiImpl(OkHttpClientSingleton.getOkHttpClient());
 
     void startExchange() {
         showProgress();
@@ -308,7 +311,7 @@ public class ExchangeTextView extends LinearLayout
                 shakeAmountField();
             }
         } else { // no XMR currency - cannot happen!
-            Timber.e("No XMR currency!");
+            Timber.e("No TUBE currency!");
             setXmr(null);
             notXmrAmount = null;
             return;
