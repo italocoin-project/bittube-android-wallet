@@ -51,6 +51,7 @@ import com.m2049r.xmrwallet.util.KeyStoreHelper;
 import com.m2049r.xmrwallet.util.NodeList;
 import com.m2049r.xmrwallet.util.Notice;
 import com.m2049r.xmrwallet.widget.DropDownEditText;
+import com.m2049r.xmrwallet.widget.InputLayout;
 import com.m2049r.xmrwallet.widget.Toolbar;
 
 import java.io.File;
@@ -71,6 +72,7 @@ public class LoginFragment extends Fragment implements WalletInfoAdapter.OnInter
     private EditText etDummy;
     private ImageView ivGunther;
     private DropDownEditText etDaemonAddress;
+    private InputLayout dropDownIL;
     private ArrayAdapter<String> nodeAdapter;
 
     private Listener activityCallback;
@@ -175,7 +177,9 @@ public class LoginFragment extends Fragment implements WalletInfoAdapter.OnInter
         ViewGroup llNotice = (ViewGroup) view.findViewById(R.id.llNotice);
         Notice.showAll(llNotice,".*_login");
 
-        etDaemonAddress = (DropDownEditText) view.findViewById(R.id.etDaemonAddress);
+        dropDownIL = view.findViewById(R.id.il_dropdown);
+
+        etDaemonAddress = dropDownIL.getDropEditText();
         nodeAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line);
         etDaemonAddress.setAdapter(nodeAdapter);
 
