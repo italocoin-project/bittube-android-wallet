@@ -229,13 +229,8 @@ public class SendAddressWizardFragment extends SendWizardFragment {
     }
 
     private boolean isBitcoinAddress() {
-<<<<<<< HEAD
-        String address = etAddress.getEditText().getText().toString();
-        if ((address.length() >= 27) && (address.length() <= 35))
-=======
         String address = etAddress.getText();
         if ((address.length() >= 27) && (address.length() <= 34))
->>>>>>> 6dd4fe4... Solving bug in id Payment field. It was optional before the bug.
             return BitcoinAddressValidator.validate(address);
         else
             return false;
