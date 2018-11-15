@@ -7,8 +7,9 @@
         style="@style/ToolBarStyle.ActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableStart="@drawable/ic_favorite_white_24dp"
-        android:text="@string/label_credits" />
+        android:visibility="invisible"
+        android:drawableStart="@drawable/icon_wallet"
+        android:text="" />
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
@@ -21,8 +22,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_marginTop="-8dp"
-            android:src="@drawable/ic_logo_horizontol_xmrujo"
+            android:layout_marginTop="-5dp"
+            android:src="@drawable/bittube"
+            android:maxWidth="160dp"
+            android:adjustViewBounds="true"
             android:visibility="visible" />
 
         <LinearLayout
